@@ -13,7 +13,6 @@ import (
 
 func main() {
 	cfg := configs.LoadConfig()
-
 	database.ConnectDatabase(cfg)
 
 	userRepo := repository.NewUserRepository(database.DB)
@@ -23,9 +22,14 @@ func main() {
 	categoryRepo := repository.NewCategoryRepository(database.DB)
 	categoryService := services.NewCategoryService(categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
+
 	transactionRepo := repository.NewTransactionRepository(database.DB)
 	transactionService := services.NewTransactionService(transactionRepo)
 	transactionHandler := handlers.NewTransactionHandler(transactionService)
+
+	budgetRepo := repository.NewBudgetRepository(database.DB)
+	budgetService := services.NewBudgetService(budgetRepo)
+	budgetHandler := handlers.NewBudgetHandler(budgetService)
 
 	r := gin.Default()
 
@@ -33,23 +37,16 @@ func main() {
 	r.POST("/login", userHandler.Login)
 
 	protected := r.Group("/api")
-
 	protected.Use(middleware.AuthMiddleware())
 	{
-
 		protected.POST("/categories", categoryHandler.Create)
 		protected.GET("/categories", categoryHandler.GetAll)
 
 		protected.POST("/transactions", transactionHandler.Create)
 		protected.GET("/transactions", transactionHandler.GetAll)
 
-		protected.GET("/ping-auth", func(c *gin.Context) {
-			userID, _ := c.Get("user_id")
-			c.JSON(200, gin.H{
-				"message": "Authentication successful!",
-				"user_id": userID,
-			})
-		})
+		protected.POST("/budgets", budgetHandler.Create)
+		protected.GET("/budgets", budgetHandler.GetAll)
 	}
 
 	r.Run(":" + cfg.ServerPort)

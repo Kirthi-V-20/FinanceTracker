@@ -10,4 +10,5 @@ type Budget struct {
 	UserID     uint      `json:"user_id" gorm:"not null"`
 	CategoryID uint      `json:"category_id" gorm:"not null"`
 	CreatedAt  time.Time `json:"created_at"`
+	Category   Category  `json:"category" gorm:"foreignKey:CategoryID"`
 }
