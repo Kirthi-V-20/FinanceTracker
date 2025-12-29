@@ -1,18 +1,19 @@
-import React from 'react'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
-    <div className="min-h-screen bg-blue-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-xl shadow-lg border border-blue-100">
-        <h1 className="text-3xl font-bold text-blue-600">
-          Finance Tracker Frontend
-        </h1>
-        <p className="text-gray-500 mt-2">
-          Tailwind and React are now connected!
-        </p>
-      </div>
-    </div>
-  )
+    <Router>
+      <Routes>
+        {/* If the URL is /login, show the LoginPage */}
+        <Route path="/login" element={<LoginPage />} />
+        
+        {/* If the user goes to the main URL, send them to login for now */}
+        <Route path="/" element={<Navigate to="/login" />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
