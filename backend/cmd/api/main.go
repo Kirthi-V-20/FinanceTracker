@@ -20,19 +20,27 @@ func main() {
 	userService := services.NewUserService(userRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
+	categoryRepo := repository.NewCategoryRepository(database.DB)
+	categoryService := services.NewCategoryService(categoryRepo)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
+
 	r := gin.Default()
 
 	r.POST("/register", userHandler.Register)
 	r.POST("/login", userHandler.Login)
 
 	protected := r.Group("/api")
+
 	protected.Use(middleware.AuthMiddleware())
 	{
+
+		protected.POST("/categories", categoryHandler.Create)
+		protected.GET("/categories", categoryHandler.GetAll)
 
 		protected.GET("/ping-auth", func(c *gin.Context) {
 			userID, _ := c.Get("user_id")
 			c.JSON(200, gin.H{
-				"message": "Auth is working!",
+				"message": "Authentication successful!",
 				"user_id": userID,
 			})
 		})
