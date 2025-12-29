@@ -1,0 +1,25 @@
+package repository
+
+import (
+	"financetracker/internal/models"
+
+	"gorm.io/gorm"
+)
+
+type TransactionRepository struct {
+	db *gorm.DB
+}
+
+func NewTransactionRepository(db *gorm.DB) *TransactionRepository {
+	return &TransactionRepository{db: db}
+}
+
+func (r *TransactionRepository) Create(t *models.Transaction) error {
+	return r.db.Create(t).Error
+}
+
+func (r *TransactionRepository) GetAllByUserID(userID uint) ([]models.Transaction, error) {
+	var transactions []models.Transaction
+	err := r.db.Preload("Category").Where("user_id = ?", userID).Order("date desc").Find(&transactions).Error
+	return transactions, err
+}

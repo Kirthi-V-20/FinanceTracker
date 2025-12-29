@@ -23,6 +23,9 @@ func main() {
 	categoryRepo := repository.NewCategoryRepository(database.DB)
 	categoryService := services.NewCategoryService(categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	transactionRepo := repository.NewTransactionRepository(database.DB)
+	transactionService := services.NewTransactionService(transactionRepo)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
 
 	r := gin.Default()
 
@@ -36,6 +39,9 @@ func main() {
 
 		protected.POST("/categories", categoryHandler.Create)
 		protected.GET("/categories", categoryHandler.GetAll)
+
+		protected.POST("/transactions", transactionHandler.Create)
+		protected.GET("/transactions", transactionHandler.GetAll)
 
 		protected.GET("/ping-auth", func(c *gin.Context) {
 			userID, _ := c.Get("user_id")
