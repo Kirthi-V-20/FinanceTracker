@@ -4,10 +4,11 @@ import (
 	"financetracker/configs"
 	"financetracker/internal/database"
 	"financetracker/internal/handlers"
-	"financetracker/internal/middleware"
 	"financetracker/internal/repository"
+	"financetracker/internal/routes"
 	"financetracker/internal/services"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,44 +17,32 @@ func main() {
 	database.ConnectDatabase(cfg)
 
 	userRepo := repository.NewUserRepository(database.DB)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
-
-	categoryRepo := repository.NewCategoryRepository(database.DB)
-	categoryService := services.NewCategoryService(categoryRepo)
-	categoryHandler := handlers.NewCategoryHandler(categoryService)
-
-	transactionRepo := repository.NewTransactionRepository(database.DB)
-	transactionService := services.NewTransactionService(transactionRepo)
-	transactionHandler := handlers.NewTransactionHandler(transactionService)
-
+	catRepo := repository.NewCategoryRepository(database.DB)
+	transRepo := repository.NewTransactionRepository(database.DB)
 	budgetRepo := repository.NewBudgetRepository(database.DB)
-	budgetService := services.NewBudgetService(budgetRepo)
-	budgetHandler := handlers.NewBudgetHandler(budgetService)
 
-	reportService := services.NewReportService(transactionRepo, budgetRepo)
+	userService := services.NewUserService(userRepo)
+	catService := services.NewCategoryService(catRepo)
+	transService := services.NewTransactionService(transRepo)
+	budgetService := services.NewBudgetService(budgetRepo)
+	reportService := services.NewReportService(transRepo, budgetRepo)
+
+	userHandler := handlers.NewUserHandler(userService)
+	catHandler := handlers.NewCategoryHandler(catService)
+	transHandler := handlers.NewTransactionHandler(transService)
+	budgetHandler := handlers.NewBudgetHandler(budgetService)
 	reportHandler := handlers.NewReportHandler(reportService)
 
 	r := gin.Default()
 
-	r.POST("/register", userHandler.Register)
-	r.POST("/login", userHandler.Login)
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true,
+	}))
 
-	protected := r.Group("/api")
-	protected.Use(middleware.AuthMiddleware())
-	{
-		protected.POST("/categories", categoryHandler.Create)
-		protected.GET("/categories", categoryHandler.GetAll)
-
-		protected.POST("/transactions", transactionHandler.Create)
-		protected.GET("/transactions", transactionHandler.GetAll)
-
-		protected.POST("/budgets", budgetHandler.Create)
-		protected.GET("/budgets", budgetHandler.GetAll)
-
-		protected.POST("/transactions/import", transactionHandler.ImportCSV)
-		protected.GET("/reports", reportHandler.GetSummary)
-	}
+	routes.SetupRoutes(r, userHandler, catHandler, transHandler, budgetHandler, reportHandler)
 
 	r.Run(":" + cfg.ServerPort)
 }
