@@ -2,14 +2,18 @@ package services
 
 import (
 	"financetracker/internal/models"
-	"financetracker/internal/repository"
 )
 
-type CategoryService struct {
-	repo *repository.CategoryRepository
+type CategoryRepositoryInterface interface {
+	Create(category *models.Category) error
+	GetAllByUserID(userID uint) ([]models.Category, error)
 }
 
-func NewCategoryService(repo *repository.CategoryRepository) *CategoryService {
+type CategoryService struct {
+	repo CategoryRepositoryInterface
+}
+
+func NewCategoryService(repo CategoryRepositoryInterface) *CategoryService {
 	return &CategoryService{repo: repo}
 }
 
