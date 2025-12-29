@@ -3,15 +3,21 @@ package main
 import (
 	"financetracker/configs"
 	"financetracker/internal/database"
+	"financetracker/internal/handlers"
+	"financetracker/internal/repository"
+	"financetracker/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-
 	cfg := configs.LoadConfig()
 
 	database.ConnectDatabase(cfg)
+
+	userRepo := repository.NewUserRepository(database.DB)
+	userService := services.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
 
 	r := gin.Default()
 
@@ -20,6 +26,8 @@ func main() {
 			"message": "Finance Tracker API is online!",
 		})
 	})
+
+	r.POST("/register", userHandler.Register)
 
 	r.Run(":" + cfg.ServerPort)
 }
