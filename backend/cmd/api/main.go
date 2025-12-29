@@ -31,6 +31,9 @@ func main() {
 	budgetService := services.NewBudgetService(budgetRepo)
 	budgetHandler := handlers.NewBudgetHandler(budgetService)
 
+	reportService := services.NewReportService(transactionRepo, budgetRepo)
+	reportHandler := handlers.NewReportHandler(reportService)
+
 	r := gin.Default()
 
 	r.POST("/register", userHandler.Register)
@@ -47,6 +50,8 @@ func main() {
 
 		protected.POST("/budgets", budgetHandler.Create)
 		protected.GET("/budgets", budgetHandler.GetAll)
+
+		protected.GET("/reports", reportHandler.GetSummary)
 	}
 
 	r.Run(":" + cfg.ServerPort)
