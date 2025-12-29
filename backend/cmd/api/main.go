@@ -51,6 +51,7 @@ func main() {
 		protected.POST("/budgets", budgetHandler.Create)
 		protected.GET("/budgets", budgetHandler.GetAll)
 
+		protected.POST("/transactions/import", transactionHandler.ImportCSV)
 		protected.GET("/reports", reportHandler.GetSummary)
 	}
 

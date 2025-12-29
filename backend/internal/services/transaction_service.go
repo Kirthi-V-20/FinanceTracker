@@ -24,3 +24,13 @@ func (s *TransactionService) CreateManualTransaction(t *models.Transaction) erro
 func (s *TransactionService) GetUserTransactions(userID uint) ([]models.Transaction, error) {
 	return s.repo.GetAllByUserID(userID)
 }
+
+func (s *TransactionService) ImportFromCSV(transactions []models.Transaction) error {
+	for _, t := range transactions {
+		err := s.repo.Create(&t)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
