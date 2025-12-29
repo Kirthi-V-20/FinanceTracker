@@ -28,6 +28,7 @@ func main() {
 	})
 
 	r.POST("/register", userHandler.Register)
+	r.POST("/login", userHandler.Login)
 
 	r.Run(":" + cfg.ServerPort)
 }

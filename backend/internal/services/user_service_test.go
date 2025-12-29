@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type MockUserRepository struct {
@@ -51,4 +52,25 @@ func TestRegisterUser_DuplicateEmail(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, user)
 	assert.Equal(t, "user already exists with this email", err.Error())
+}
+
+func TestLoginUser_Success(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	service := NewUserService(mockRepo)
+
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	dummyUser := &models.User{
+		ID:       1,
+		Email:    "test@test.com",
+		Password: string(hashedPassword),
+	}
+
+	mockRepo.On("FindByEmail", "test@test.com").Return(dummyUser, nil)
+
+	token, user, err := service.LoginUser("test@test.com", "password123")
+
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
+	assert.NotEmpty(t, token)
+	assert.Equal(t, uint(1), user.ID)
 }

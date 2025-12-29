@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"financetracker/internal/models"
+	"financetracker/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -43,4 +44,23 @@ func (s *UserService) RegisterUser(username, email, password string) (*models.Us
 	}
 
 	return user, nil
+}
+
+func (s *UserService) LoginUser(email, password string) (string, *models.User, error) {
+	user, err := s.repo.FindByEmail(email)
+	if err != nil {
+		return "", nil, errors.New("invalid email or password")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", nil, errors.New("invalid email or password")
+	}
+
+	token, err := utils.GenerateToken(user.ID)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return token, user, nil
 }
