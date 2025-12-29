@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { LogIn, Mail, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom'; 
 
 const LoginPage = () => {
 
@@ -84,6 +85,9 @@ const LoginPage = () => {
           >
             Sign In
           </button>
+          <p className="text-center mt-6 text-gray-600">
+            Don't have an account? <Link to="/register" className="text-blue-600 font-bold">Sign Up</Link>
+            </p>
         </form>
       </div>
     </div>
