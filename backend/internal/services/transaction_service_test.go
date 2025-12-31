@@ -23,6 +23,10 @@ func (m *MockTransactionRepository) GetAllByUserID(userID uint) ([]models.Transa
 	return args.Get(0).([]models.Transaction), args.Error(1)
 }
 
+func (m *MockTransactionRepository) Delete(id uint, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
 func TestCreateManualTransaction_Success(t *testing.T) {
 	mockRepo := new(MockTransactionRepository)
 	service := NewTransactionService(mockRepo)
@@ -60,5 +64,17 @@ func TestGetUserTransactions_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
 	assert.Equal(t, 10.0, result[0].Amount)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestDeleteTransaction_Success(t *testing.T) {
+	mockRepo := new(MockTransactionRepository)
+	service := NewTransactionService(mockRepo)
+
+	mockRepo.On("Delete", uint(10), uint(1)).Return(nil)
+
+	err := service.DeleteTransaction(10, 1)
+
+	assert.NoError(t, err)
 	mockRepo.AssertExpectations(t)
 }
