@@ -22,7 +22,12 @@ func NewTransactionHandler(s *services.TransactionService) *TransactionHandler {
 }
 
 func (h *TransactionHandler) Create(c *gin.Context) {
-	userID, _ := c.Get("user_id")
+	val, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userID := val.(uint)
 
 	var req dto.TransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -31,12 +36,12 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 	}
 
 	transaction := &models.Transaction{
-		Amount:      req.Amount,
+		Amount:      *req.Amount,
 		Type:        req.Type,
-		CategoryID:  req.CategoryID,
+		CategoryID:  *req.CategoryID,
 		Description: req.Description,
 		Date:        req.Date,
-		UserID:      userID.(uint),
+		UserID:      userID,
 	}
 
 	if err := h.service.CreateManualTransaction(transaction); err != nil {
@@ -114,4 +119,42 @@ func (h *TransactionHandler) ImportCSV(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully imported " + strconv.Itoa(len(transactions)) + " transactions"})
+}
+
+func (h *TransactionHandler) ExportCSV(c *gin.Context) {
+	val, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userID := val.(uint)
+
+	csvData, err := h.service.ExportToCSV(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate CSV"})
+		return
+	}
+
+	c.Header("Content-Disposition", "attachment; filename=transactions.csv")
+	c.Header("Content-Type", "text/csv")
+	c.String(http.StatusOK, csvData)
+}
+
+func (h *TransactionHandler) Delete(c *gin.Context) {
+	val, _ := c.Get("user_id")
+	userID := val.(uint)
+
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		return
+	}
+
+	if err := h.service.DeleteTransaction(uint(id), userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Transaction deleted successfully"})
 }

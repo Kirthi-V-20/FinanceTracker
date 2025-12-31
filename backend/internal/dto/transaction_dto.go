@@ -3,9 +3,9 @@ package dto
 import "time"
 
 type TransactionRequest struct {
-	Amount      float64   `json:"amount" binding:"required"`
+	Amount      *float64  `json:"amount" binding:"required"`
 	Type        string    `json:"type" binding:"required"`
-	CategoryID  uint      `json:"category_id" binding:"required"`
+	CategoryID  *uint     `json:"category_id" binding:"required"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date" binding:"required"`
 }

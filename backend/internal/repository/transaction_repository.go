@@ -23,3 +23,7 @@ func (r *TransactionRepository) GetAllByUserID(userID uint) ([]models.Transactio
 	err := r.db.Preload("Category").Where("user_id = ?", userID).Order("date desc").Find(&transactions).Error
 	return transactions, err
 }
+
+func (r *TransactionRepository) Delete(id uint, userID uint) error {
+	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error
+}
