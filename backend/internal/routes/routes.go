@@ -34,5 +34,7 @@ func SetupRoutes(
 		protected.GET("/budgets", budgetHandler.GetAll)
 
 		protected.GET("/reports/summary", reportHandler.GetSummary)
+		protected.DELETE("/transactions/:id", transactionHandler.Delete)
+		protected.GET("/transactions/export", transactionHandler.ExportCSV)
 	}
 }
