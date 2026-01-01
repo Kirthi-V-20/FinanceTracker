@@ -22,6 +22,14 @@ func (m *MockCategoryRepository) GetAllByUserID(userID uint) ([]models.Category,
 	return args.Get(0).([]models.Category), args.Error(1)
 }
 
+func (m *MockCategoryRepository) GetByNameAndUserID(name string, userID uint) (*models.Category, error) {
+	args := m.Called(name, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.Category), args.Error(1)
+}
+
 func TestCreateCategory_Success(t *testing.T) {
 	mockRepo := new(MockCategoryRepository)
 	service := NewCategoryService(mockRepo)

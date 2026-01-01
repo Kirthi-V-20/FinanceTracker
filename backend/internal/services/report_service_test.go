@@ -8,18 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// WHY: There are NO "type Mock..." or "func (m *Mock...)" blocks here.
-// This file "borrows" them from your other test files in the same folder.
-
 func TestGetMonthlyReport_Calculation(t *testing.T) {
-	// 1. Setup
 	mockTrans := new(MockTransactionRepository)
 	mockBudget := new(MockBudgetRepository)
 	service := NewReportService(mockTrans, mockBudget)
 
 	testDate := time.Date(2025, 12, 1, 0, 0, 0, 0, time.UTC)
 
-	// 2. Create Dummy Data
 	dummyTransactions := []models.Transaction{
 		{
 			ID: 1, Amount: 1000, Type: "income", Date: testDate, UserID: 1,
@@ -30,14 +25,18 @@ func TestGetMonthlyReport_Calculation(t *testing.T) {
 		},
 	}
 
-	// 3. Set Expectations
-	// Why: We tell the mock what to return when the service calls it.
-	mockTrans.On("GetAllByUserID", uint(1)).Return(dummyTransactions, nil)
+	dummyBudgets := []models.Budget{
+		{
+			ID: 1, CategoryID: 1, Amount: 500, Month: 12, Year: 2025, UserID: 1,
+			Category: models.Category{Name: "Food"},
+		},
+	}
 
-	// 4. Execute
+	mockTrans.On("GetAllByUserID", uint(1)).Return(dummyTransactions, nil)
+	mockBudget.On("GetByUserID", uint(1)).Return(dummyBudgets, nil)
+
 	report, err := service.GetMonthlyReport(1, 12, 2025)
 
-	// 5. Assert (The Checks)
 	assert.NoError(t, err)
 	assert.Equal(t, 1000.0, report.TotalIncome)
 	assert.Equal(t, 50.0, report.TotalExpense)
@@ -46,8 +45,9 @@ func TestGetMonthlyReport_Calculation(t *testing.T) {
 	if len(report.CategoryReports) > 0 {
 		assert.Equal(t, "Food", report.CategoryReports[0].CategoryName)
 		assert.Equal(t, 50.0, report.CategoryReports[0].TotalSpent)
+		assert.Equal(t, 500.0, report.CategoryReports[0].BudgetLimit)
 	}
 
-	// Verify the call happened
 	mockTrans.AssertExpectations(t)
+	mockBudget.AssertExpectations(t)
 }

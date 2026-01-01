@@ -22,6 +22,10 @@ func (m *MockBudgetRepository) GetByUserID(userID uint) ([]models.Budget, error)
 	return args.Get(0).([]models.Budget), args.Error(1)
 }
 
+func (m *MockBudgetRepository) Update(budget *models.Budget) error {
+	args := m.Called(budget)
+	return args.Error(0)
+}
 func TestCreateBudget_Success(t *testing.T) {
 	mockRepo := new(MockBudgetRepository)
 	service := NewBudgetService(mockRepo)
