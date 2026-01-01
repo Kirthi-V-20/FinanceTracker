@@ -75,7 +75,7 @@ const CategoriesPage = () => {
           <p className="text-slate-500">Loading your categories...</p>
         ) : (
           categories.map((cat) => (
-            <div key={cat.ID} className="bg-white p-4 rounded-xl border border-slate-200 flex items-center gap-3 shadow-sm hover:border-violet-200 transition-all">
+            <div key={cat.ID || cat.id || cat.name} className="bg-white p-4 rounded-xl border border-slate-200 flex items-center gap-3 shadow-sm hover:border-violet-200 transition-all">
               <div className="w-10 h-10 bg-violet-50 rounded-lg flex items-center justify-center text-violet-600">
                 <Tag size={20} />
               </div>
