@@ -28,13 +28,14 @@ func SetupRoutes(
 
 		protected.POST("/transactions", transactionHandler.Create)
 		protected.GET("/transactions", transactionHandler.GetAll)
-		protected.POST("/transactions/import", transactionHandler.ImportCSV)
 
 		protected.POST("/budgets", budgetHandler.Create)
 		protected.GET("/budgets", budgetHandler.GetAll)
 
 		protected.GET("/reports/summary", reportHandler.GetSummary)
 		protected.DELETE("/transactions/:id", transactionHandler.Delete)
-		protected.GET("/transactions/export", transactionHandler.ExportCSV)
+
+		protected.PUT("/transactions/:id", transactionHandler.Update)
+		protected.PUT("/budgets/:id", budgetHandler.Update)
 	}
 }
