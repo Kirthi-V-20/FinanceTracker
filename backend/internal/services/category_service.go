@@ -7,6 +7,7 @@ import (
 type CategoryRepositoryInterface interface {
 	Create(category *models.Category) error
 	GetAllByUserID(userID uint) ([]models.Category, error)
+	GetByNameAndUserID(name string, userID uint) (*models.Category, error)
 }
 
 type CategoryService struct {
