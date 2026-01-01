@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"encoding/csv"
 	"financetracker/internal/dto"
 	"financetracker/internal/models"
 	"financetracker/internal/services"
 	"net/http"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -76,70 +73,6 @@ func (h *TransactionHandler) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (h *TransactionHandler) ImportCSV(c *gin.Context) {
-	userID, _ := c.Get("user_id")
-
-	file, _, err := c.Request.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File is required"})
-		return
-	}
-	defer file.Close()
-
-	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read CSV"})
-		return
-	}
-
-	var transactions []models.Transaction
-
-	for i, record := range records {
-		if i == 0 {
-			continue
-		}
-
-		amount, _ := strconv.ParseFloat(record[0], 64)
-		catID, _ := strconv.Atoi(record[2])
-
-		transactions = append(transactions, models.Transaction{
-			Amount:      amount,
-			Type:        strings.ToLower(record[1]),
-			CategoryID:  uint(catID),
-			Description: record[3],
-			UserID:      userID.(uint),
-			Date:        time.Now(),
-		})
-	}
-
-	if err := h.service.ImportFromCSV(transactions); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully imported " + strconv.Itoa(len(transactions)) + " transactions"})
-}
-
-func (h *TransactionHandler) ExportCSV(c *gin.Context) {
-	val, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-	userID := val.(uint)
-
-	csvData, err := h.service.ExportToCSV(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate CSV"})
-		return
-	}
-
-	c.Header("Content-Disposition", "attachment; filename=transactions.csv")
-	c.Header("Content-Type", "text/csv")
-	c.String(http.StatusOK, csvData)
-}
-
 func (h *TransactionHandler) Delete(c *gin.Context) {
 	val, _ := c.Get("user_id")
 	userID := val.(uint)
@@ -157,4 +90,34 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Transaction deleted successfully"})
+}
+
+func (h *TransactionHandler) Update(c *gin.Context) {
+	val, _ := c.Get("user_id")
+	userID := val.(uint)
+
+	idStr := c.Param("id")
+	id, _ := strconv.ParseUint(idStr, 10, 32)
+
+	var req dto.TransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Validation failed: " + err.Error()})
+		return
+	}
+
+	transaction := &models.Transaction{
+		ID:          uint(id),
+		UserID:      userID,
+		Amount:      *req.Amount,
+		Type:        req.Type,
+		CategoryID:  *req.CategoryID,
+		Description: req.Description,
+		Date:        req.Date,
+	}
+
+	if err := h.service.UpdateTransaction(transaction); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Update failed in database"})
+		return
+	}
+	c.JSON(http.StatusOK, transaction)
 }

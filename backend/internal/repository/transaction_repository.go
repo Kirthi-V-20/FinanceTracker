@@ -27,3 +27,9 @@ func (r *TransactionRepository) GetAllByUserID(userID uint) ([]models.Transactio
 func (r *TransactionRepository) Delete(id uint, userID uint) error {
 	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error
 }
+
+func (r *TransactionRepository) Update(t *models.Transaction) error {
+	return r.db.Model(&models.Transaction{}).
+		Where("id = ? AND user_id = ?", t.ID, t.UserID).
+		Updates(t).Error
+}
