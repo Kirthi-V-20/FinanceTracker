@@ -31,14 +31,12 @@ const BudgetsPage = () => {
     const handleSubmit = async (e) => {
     e.preventDefault();
     const now = new Date();
-    
-    // WHY: We MUST include month and year in the update payload
-    // otherwise the backend 'required' check will fail.
+   
     const payload = {
         category_id: parseInt(categoryId),
         amount: parseFloat(amount),
-        month: now.getMonth() + 1, // January is 1
-        year: now.getFullYear()    // 2026
+        month: now.getMonth() + 1, 
+        year: now.getFullYear()   
     };
 
     try {
@@ -53,14 +51,12 @@ const BudgetsPage = () => {
         setEditingId(null);
         loadData(); 
     } catch (err) {
-        // WHY: This will tell you exactly what the backend didn't like
         const serverMessage = err.response?.data?.error || "Unknown Error";
         alert("Action failed: " + serverMessage);
     }
 };
 
     const startEdit = (b) => {
-    // WHY: We check 'category_id' (from our new DTO) or 'CategoryID' (from the model)
     const catId = b.category_id || b.CategoryID;
     const amount = b.amount || b.Amount;
     const id = b.id || b.ID;
@@ -68,7 +64,7 @@ const BudgetsPage = () => {
     if (id && catId) {
         setEditingId(id);
         setAmount(amount.toString());
-        setCategoryId(catId.toString()); // This fills the dropdown correctly
+        setCategoryId(catId.toString()); 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
         alert("Could not load budget data for editing.");
