@@ -45,3 +45,9 @@ export const deleteTransaction = async (id) => {
     const response = await api.delete(`/api/transactions/${id}`); 
     return response.data;
 };
+
+export const updateTransaction = async (id, data) => {
+    const response = await api.put(`/api/transactions/${id}`, data);
+    return response.data;
+};
+
