@@ -7,6 +7,7 @@ import (
 type BudgetRepositoryInterface interface {
 	Create(budget *models.Budget) error
 	GetByUserID(userID uint) ([]models.Budget, error)
+	Update(budget *models.Budget) error
 }
 
 type BudgetService struct {
@@ -23,4 +24,8 @@ func (s *BudgetService) CreateBudget(budget *models.Budget) error {
 
 func (s *BudgetService) GetUserBudgets(userID uint) ([]models.Budget, error) {
 	return s.repo.GetByUserID(userID)
+}
+
+func (s *BudgetService) UpdateBudget(budget *models.Budget) error {
+	return s.repo.Update(budget)
 }
