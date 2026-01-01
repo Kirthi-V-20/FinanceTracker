@@ -17,9 +17,22 @@ func NewReportService(tr TransactionRepositoryInterface, br BudgetRepositoryInte
 }
 
 func (s *ReportService) GetMonthlyReport(userID uint, month int, year int) (dto.MonthlySummary, error) {
+
 	transactions, err := s.transRepo.GetAllByUserID(userID)
 	if err != nil {
 		return dto.MonthlySummary{}, err
+	}
+
+	budgets, err := s.budgetRepo.GetByUserID(userID)
+	if err != nil {
+		return dto.MonthlySummary{}, err
+	}
+
+	budgetLimits := make(map[uint]float64)
+	for _, b := range budgets {
+		if b.Month == month && b.Year == year {
+			budgetLimits[b.CategoryID] = b.Amount
+		}
 	}
 
 	summary := dto.MonthlySummary{
@@ -28,35 +41,28 @@ func (s *ReportService) GetMonthlyReport(userID uint, month int, year int) (dto.
 		CategoryReports: []dto.CategoryReport{},
 	}
 
-	spendingMap := make(map[string]float64)
+	catTotals := make(map[uint]float64)
+	catNames := make(map[uint]string)
 
 	for _, t := range transactions {
-		// Only look at the requested month and year
 		if int(t.Date.Month()) == month && t.Date.Year() == year {
 			if t.Type == "income" {
 				summary.TotalIncome += t.Amount
 			} else if t.Type == "expense" {
 				summary.TotalExpense += t.Amount
-
-				// Get the category name (default to "Other" if missing)
-				catName := "Other"
-				if t.Category.Name != "" {
-					catName = t.Category.Name
-				}
-
-				// ADD the amount to this specific category bucket
-				spendingMap[catName] += t.Amount
+				catTotals[t.CategoryID] += t.Amount
+				catNames[t.CategoryID] = t.Category.Name
 			}
 		}
 	}
 
 	summary.NetSavings = summary.TotalIncome - summary.TotalExpense
 
-	// 3. Convert the grouped map back into the list for the Pie Chart
-	for name, total := range spendingMap {
+	for id, total := range catTotals {
 		summary.CategoryReports = append(summary.CategoryReports, dto.CategoryReport{
-			CategoryName: name,
+			CategoryName: catNames[id],
 			TotalSpent:   total,
+			BudgetLimit:  budgetLimits[id],
 		})
 	}
 
