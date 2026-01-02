@@ -1,7 +1,6 @@
 package configs
 
 import (
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -18,14 +17,10 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file. Make sure it exists in the backend folder.")
-	}
+	_ = godotenv.Load()
 
 	return &Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
+		DBHost:     getEnv("DB_HOST", "db"),
 		DBUser:     getEnv("DB_USER", "postgres"),
 		DBPassword: getEnv("DB_PASSWORD", ""),
 		DBName:     getEnv("DB_NAME", "finance_tracker"),
