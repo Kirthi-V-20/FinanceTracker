@@ -39,8 +39,8 @@ CoinCare addresses the common question, “Where did my money go?” by providin
 
 1. **Clone the Repository:**
 ```bash
-https://github.com/Kirthi-V-20/FinanceTracker
-cd financetracker
+git clone https://github.com/Kirthi-V-20/FinanceTracker
+cd FinanceTracker
 ```
 
 2. **Create a .env file inside the /backend directory:**
@@ -57,7 +57,7 @@ JWT_SECRET=your_super_secret_random_key_123
 3. **Build & Run**
 Run the following command to build images and start the containers.
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 > Note: The first run may take a few minutes to download the Go and Node images.
 
